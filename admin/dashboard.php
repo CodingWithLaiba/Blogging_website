@@ -1,37 +1,46 @@
 <?php
 @include '../components/connect.php';
-
 session_start();
 
-$admin_id = $_SESSION['admin_id'] ?? null;
+$admin_id = $_SESSION['admin_id'] ?? 1;
+$select_admin = $conn->prepare("SELECT * FROM admin WHERE id = ?");
+$select_admin->execute([$admin_id]);
 
-if(!$admin_id){
-    // header('location:admin_login.php');
-    $admin_id = 1;
+$admin = $select_admin->fetch(PDO::FETCH_ASSOC);
+
+// TOTAL COUNTS (FAST)
+$total_posts = $conn->query("SELECT COUNT(*) FROM posts")->fetchColumn();
+$total_users = $conn->query("SELECT COUNT(*) FROM users")->fetchColumn();
+$total_comments = $conn->query("SELECT COUNT(*) FROM comments")->fetchColumn();
+$total_likes = $conn->query("SELECT COUNT(*) FROM likes")->fetchColumn();
+
+//  RECENT POSTS
+$recentPosts = $conn->query("
+    SELECT p.*,
+    (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
+    (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
+    FROM posts p
+    ORDER BY p.date DESC
+    LIMIT 5
+")->fetchAll(PDO::FETCH_ASSOC);
+
+// RECENT COMMENTS 
+$recentComments = $conn->query("
+    SELECT c.*, p.title AS post_title
+    FROM comments c
+    JOIN posts p ON c.post_id = p.id
+    ORDER BY c.date DESC
+    LIMIT 5
+")->fetchAll(PDO::FETCH_ASSOC);
+
+//  FUNCTIONS
+function sanitize($data){
+    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
 }
-$admin['name'] = "Admin";
 
-
-// Total Posts
-$select_posts = $conn->prepare("SELECT * FROM posts");
-$select_posts->execute();
-$total_posts = $select_posts->rowCount();
-
-// Total Users
-$select_users = $conn->prepare("SELECT * FROM users");
-$select_users->execute();
-$total_users = $select_users->rowCount();
-
-// Total Comments
-$select_comments = $conn->prepare("SELECT * FROM comments");
-$select_comments->execute();
-$total_comments = $select_comments->rowCount();
-
-// Total Likes
-$select_likes = $conn->prepare("SELECT * FROM likes");
-$select_likes->execute();
-$total_likes = $select_likes->rowCount();
-
+function formatDate($date){
+    return date("d M Y", strtotime($date));
+}
 ?>
 
 <!DOCTYPE html>
@@ -44,7 +53,7 @@ $total_likes = $select_likes->rowCount();
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../css/admin_style.css">
+    <link rel="stylesheet" href="../css/admin-style.css">
 
     
 </head>
@@ -53,14 +62,15 @@ $total_likes = $select_likes->rowCount();
 
 <?php include '../components/admin_header.php'; ?>
 
-<!-- ✅ YOUR DASHBOARD CONTENT START -->
+
+<!-- DASHBOARD CONTENT START -->
 
 
 <!-- Welcome Section -->
-<div class="dash-welcome">
+<div class="dash-welcome flex-column flex-lg-row">
     <div class="dash-welcome-left">
         <div class="dash-avatar">
-            <?= strtoupper(substr($admin['name'], 0, 1)) ?>
+          <?= strtoupper(substr($admin['name'], 0, 1)) ?>
         </div>
         <div>
             <h4>
@@ -75,13 +85,13 @@ $total_likes = $select_likes->rowCount();
         </div>
     </div>
 
-    <a href="add_posts.php" class="dash-new-post-btn">
+    <a href="add_posts.php" class="dash-new-post-btn mt-3 mt-lg-0">
         <i class="fas fa-plus"></i> New Post
     </a>
 </div>
 
 <!-- Cards -->
-<div class="row mb-3">
+<div class="row mb-3 me-0 g-3 g-lg-2">
     <div class="col-sm-6 col-xl-3">
         <div class="dash-stat-card dash-stat-blue">
             <div class="dash-stat-body">
@@ -127,39 +137,102 @@ $total_likes = $select_likes->rowCount();
         </div>
     </div>
 </div>
+<div class="row g-4 me-0">
+    <!-- Recent Posts -->
+    <div class="col-lg-8">
+     <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="dash-card-title">
+                    <div class="dash-card-title-icon blue"><i class="fas fa-file-alt"></i></div>
+                    <div>
+                        <h5>Recent Posts</h5>
+                        <span>Latest published articles</span>
+                    </div>
+                </div>
+                <a href="view_posts.php" class="dash-view-all">View All <i class="fas fa-chevron-right ms-1"></i></a>
+            </div>
+            <div class="dash-posts-list">
+                <?php if (empty($recentPosts)): ?>
+                <div class="dash-empty"><i class="fas fa-file-alt"></i><p>No posts yet. <a href="add_posts.php">Create your first post</a></p></div>
+                <?php else: ?>
+                <?php foreach ($recentPosts as $i => $post): ?>
+                <div class="dash-post-row">
+                    <div class="dash-post-num"><?= $i + 1 ?></div>
+                    <div class="dash-post-info">
+                        <a href="view_posts.php" target="_blank" class="dash-post-title"><?= sanitize(substr($post['title'], 0, 50)) ?><?= strlen($post['title']) > 50 ? '…' : '' ?></a>
+                        <div class="dash-post-meta">
+                            <span><i class="fas fa-user"></i> <?= sanitize($post['name']) ?></span>
+                            <span><i class="fas fa-calendar"></i> <?= formatDate($post['date']) ?></span>
+                            <span class="dash-cat-badge"><?= sanitize($post['category']) ?></span>
+                        </div>
+                    </div>
+                    <div class="dash-post-stats">
+                        <span class="dash-stat-pill red"><i class="fas fa-heart"></i> <?= $post['like_count'] ?></span>
+                        <span class="dash-stat-pill blue"><i class="fas fa-comment"></i> <?= $post['comment_count'] ?></span>
+                    </div>
+                    <div class="dash-post-actions">
+                        <a href="edit_post.php?id=<?= $post['id'] ?>" class="dash-action-btn edit" title="Edit"><i class="fas fa-edit"></i></a>
+                        <a href="delete-post.php?id=<?= $post['id'] ?>" class="dash-action-btn del btn-delete-confirm" data-name="this post" title="Delete"><i class="fas fa-trash"></i></a>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        </div>
+    
 
+
+    <!-- Right column -->
+     <div class="col-lg-4 d-flex flex-column gap-4">
+    <!-- Recent comments -->
+      
+             <div class="dash-card flex-fill">
+            <div class="dash-card-header">
+                <div class="dash-card-title">
+                    <div class="dash-card-title-icon green"><i class="fas fa-comments"></i></div>
+                    <div>
+                        <h5>Recent Comments</h5>
+                        <span>Latest activity</span>
+                    </div>
+                </div>
+                <a href="comments.php" class="dash-view-all">View All <i class="fas fa-chevron-right ms-1"></i></a>
+            </div>
+            <div class="dash-comments-list">
+                <?php if (empty($recentComments)): ?>
+                <div class="dash-empty"><i class="fas fa-comments"></i><p>No comments yet.</p></div>
+                <?php else: ?>
+                <?php foreach ($recentComments as $c): ?>
+                <div class="dash-comment-item">
+                    <div class="dash-comment-avatar"><?= strtoupper(substr($c['user_name'], 0, 1)) ?></div>
+                    <div class="dash-comment-body">
+                        <div class="dash-comment-meta">
+                            <strong><?= sanitize($c['user_name']) ?></strong>
+                            <span><?= formatDate($c['date']) ?></span>
+                        </div>
+                        <p class="dash-comment-text"><?= sanitize(substr($c['comment'], 0, 70)) ?><?= strlen($c['comment']) > 70 ? '…' : '' ?></p>
+                        <div class="dash-comment-post">on: <a href="../post.php?id=<?= $c['post_id'] ?>" target="_blank"><?= sanitize(substr($c['post_title'], 0, 32)) ?>…</a></div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    
+</div>
 
 <!-- JS -->
  
 <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
-<!-- <script src="../js/admin_script.js"></script> -->
+<script src="../js/adminScript.js"></script>
 <!-- <script>
     function checkScriptConnection() {
   console.log(" External JS file is connected!");
 }
 checkScriptConnection();
 </script> -->
- <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const toggleSidebar = document.getElementById('toggleSidebar');
-    const adminSidebar = document.getElementById('adminSidebar');
 
-    if (toggleSidebar && adminSidebar) {
-        toggleSidebar.addEventListener('click', function() {
-            adminSidebar.classList.toggle('show');
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            if (window.innerWidth < 992 && 
-                !adminSidebar.contains(event.target) && 
-                !toggleSidebar.contains(event.target) &&
-                adminSidebar.classList.contains('show')) {
-                adminSidebar.classList.remove('show');
-            }
-        });
-    }
-});
- </script>
 </body>
 </html>

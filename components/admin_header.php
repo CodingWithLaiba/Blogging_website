@@ -5,10 +5,11 @@ if(session_status() === PHP_SESSION_NONE){
     session_start();
 }
 
-// Dummy admin (for now)
-$currentAdmin = [
-    'name' => 'Admin'
-];
+// Get admin data from database
+$admin_id = $_SESSION['admin_id'] ?? 1;
+$select_admin = $conn->prepare("SELECT * FROM admin WHERE id = ?");
+$select_admin->execute([$admin_id]);
+$currentAdmin = $select_admin->fetch(PDO::FETCH_ASSOC);
 
 // current page
 $current_page = basename($_SERVER['PHP_SELF']);
@@ -38,17 +39,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fas fa-plus-circle"></i> Add New Post
         </a>
 
-        <!-- <a href="comments.php" class="">
+        <a href="comments.php" class="<?= ($current_page == 'comments.php') ? 'active' : '' ?>">
             <i class="fas fa-comments"></i> Comments
-        </a> -->
+        </a>
 
-        <!-- <div class="menu-label">Users</div>
-        <a href="users.php" class="">
+        <div class="menu-label">Users</div>
+        <a href="users.php" class="<?= ($current_page == 'users_accounts.php') ? 'active' : '' ?>">
             <i class="fas fa-users"></i> User Accounts
-        </a> -->
+        </a>
 
         <div class="menu-label">Admin</div>
-        <a href="admins.php" class="<?= ($current_page == 'admins.php') ? 'active' : '' ?>">
+        <a href="admin_accounts.php" class="<?= ($current_page == 'admins.php') ? 'active' : '' ?>">
             <i class="fas fa-user-shield"></i> Admin Accounts
         </a>
 
@@ -74,31 +75,45 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     <!-- TOPBAR -->
    <div class="admin-topbar">
-    <div class="d-flex align-items-center gap-3">
-
-        <!-- Toggle Button (mobile only) -->
-        <button class="sidebar-toggle d-lg-none" id="toggleSidebar">
-    <i class="fas fa-bars"></i>
-</button>
-
-        <!-- Breadcrumb -->
-        <div class="fw-semibold text-muted small">
-            Dashboard / Dashboard
-        </div>
-    </div>
-
-    <div class="d-flex align-items-center gap-3">
-
-        <a href="../index.php" target="_blank" class="btn btn-sm view-site-btn">
-            <i class="fas fa-eye"></i> View Site
-        </a>
-
-        <div class="d-flex align-items-center gap-2">
-            <div class="user-avatar">A</div>
-            <span class="fw-medium">admin</span>
-        </div>
-
-    </div>
-</div>
+    <div class="d-flex align-items-center justify-content-between gap-3 w-100">
 
     
+        <div class="d-flex align-items-center gap-3 flex-grow-1 ">
+            <!-- Toggle Button (mobile only) -->
+            <button class="sidebar-toggle d-lg-none" id="toggleSidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+
+            
+            <div class="fw-semibold text-muted small ">
+                <?php
+                $pageNames = [
+                    'dashboard.php' => 'Dashboard',
+                    'view_posts.php' => 'View Posts',
+                    'add_posts.php' => 'Add New Post',
+                    'edit_post.php' => 'Edit Post',
+                    'comments.php' => 'Comments',
+                    'users.php' => 'User Accounts',
+                    'admin_accounts.php' => 'Admin Accounts',
+                    'update_profile.php' => 'Update Account'
+                ];
+                $currentPageName = $pageNames[$current_page] ?? 'Dashboard';
+                echo 'Dashboard / ' . $currentPageName;
+                ?>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 gap-md-3">
+
+            <a href="home.php" target="_blank" class="btn btn-sm view-site-btn">
+                <i class="fas fa-eye"></i> <span class="d-none d-md-inline">View Site</span>
+            </a>
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar"><?= strtoupper(substr($currentAdmin['name'], 0, 1)) ?></div>
+                <span class="fw-medium d-none d-md-inline"><?= $currentAdmin['name'] ?></span>
+            </div>
+
+        </div>
+    </div>
+</div>
