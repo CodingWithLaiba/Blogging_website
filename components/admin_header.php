@@ -58,7 +58,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
 
         <a href="update_profile.php" class="<?= ($current_page == 'update-account.php') ? 'active' : '' ?>">
-            <i class="fas fa-user-cog"></i> Update Account
+            <i class="fas fa-user-cog"></i> Update Profile
         </a>
 
         <div class="menu-label">Website</div>
@@ -100,7 +100,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         'users_accounts.php' => 'User Accounts',
                         'admin_accounts.php' => 'Admin Accounts',
                         'register_admin.php' => 'Register User',
-                        'update_profile.php' => 'Update Account'
+                        'update_profile.php' => 'Update Profile'
                     ];
                     $currentPageName = $pageNames[$current_page] ?? 'Dashboard';
                     echo 'Dashboard / ' . $currentPageName;
