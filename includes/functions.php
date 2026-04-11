@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '../components/connect.php';
+require_once __DIR__ . '/../components/connect.php';
 
 
 function getDB() {
-    require __DIR__ . '../components/connect.php';
+    require __DIR__ . '/../components/connect.php';
     return $conn;
 }
 
@@ -34,8 +34,7 @@ function verifyPassword($password, $hash ) {
 //search functions
 
 function searchPosts($query, $limit, $offset) {
-  require __DIR__ . '../components/connect.php';
-
+    $conn = getDB();
     $stmt = $conn->prepare("
         SELECT p.*, a.name,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
@@ -59,8 +58,7 @@ function searchPosts($query, $limit, $offset) {
 
 
 function countSearchResults($query) {
-    global $conn;
-
+    $conn = getDB();
     $stmt = $conn->prepare("
         SELECT COUNT(*) FROM posts
         WHERE title LIKE :q OR content LIKE :q OR category LIKE :q
@@ -72,3 +70,79 @@ function countSearchResults($query) {
 
     return $stmt->fetchColumn();
 }
+
+function excerpt($text, $limit = 100) {
+    $text = strip_tags($text); // remove HTML
+
+    if (strlen($text) > $limit) {
+        return substr($text, 0, $limit) . '...';
+    }
+
+    return $text;
+}
+
+function getAllCategories() {
+    $conn = getDB();
+    $stmt = $conn->query("
+        SELECT category, COUNT(*) as post_count
+        FROM posts
+        GROUP BY category
+        ORDER BY category ASC
+    ");
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getPostById($id) {
+    $db = getDB();
+
+    $stmt = $db->prepare("
+        SELECT p.*, a.name,
+        (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
+        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
+        FROM posts p
+        JOIN admin a ON p.admin_id = a.id
+        WHERE p.id = ?
+    ");
+
+    $stmt->execute([$id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function formatDate($date) {
+    return date("d M Y", strtotime($date));
+}
+
+function timeAgo($datetime) {
+    $time = strtotime($datetime);
+    $diff = time() - $time;
+
+    if ($diff < 60) return $diff . " sec ago";
+    if ($diff < 3600) return floor($diff/60) . " min ago";
+    if ($diff < 86400) return floor($diff/3600) . " hrs ago";
+    return floor($diff/86400) . " days ago";
+}
+
+
+// 
+
+function getAllCommentsAdmin() {
+    $db = getDB();
+
+    $stmt = $db->query("
+        SELECT 
+            comments.id,
+            comments.comment,
+            comments.date,
+            comments.post_id,
+            users.name AS user_name,
+            posts.title AS post_title
+        FROM comments
+        JOIN users ON users.id = comments.user_id
+        JOIN posts ON posts.id = comments.post_id
+        ORDER BY comments.date DESC
+    ");
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+

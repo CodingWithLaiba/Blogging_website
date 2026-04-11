@@ -30,46 +30,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //     $error = 'Invalid request!';
     // } else {
 
-        $name = trim($_POST['name'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $confirm = $_POST['confirm_password'] ?? '';
+    $name = trim($_POST['name'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirm = $_POST['confirm_password'] ?? '';
 
-        // VALIDATION
-        if (empty($name)) {
-            $error = 'Username is required!';
-        } elseif (!empty($password) && strlen($password) < 6) {
-            $error = 'Password must be at least 6 characters!';
-        } elseif (!empty($password) && $password !== $confirm) {
-            $error = 'Passwords do not match!';
+    // VALIDATION
+    if (empty($name)) {
+        $error = 'Username is required!';
+    } elseif (!empty($password) && strlen($password) < 6) {
+        $error = 'Password must be at least 6 characters!';
+    } elseif (!empty($password) && $password !== $confirm) {
+        $error = 'Passwords do not match!';
+    } else {
+
+        // check duplicate username
+        $check = $db->prepare("SELECT id FROM admin WHERE name=? AND id!=?");
+        $check->execute([$name, $admin['id']]);
+
+        if ($check->fetch()) {
+            $error = 'Username already taken!';
         } else {
-
-            // check duplicate username
-            $check = $db->prepare("SELECT id FROM admin WHERE name=? AND id!=?");
-            $check->execute([$name, $admin['id']]);
-
-            if ($check->fetch()) {
-                $error = 'Username already taken!';
+            // update query
+            if (!empty($password)) {
+                $update = $db->prepare("UPDATE admin SET name=?, password=? WHERE id=?");
+                $update->execute([
+                    $name,
+                    ($password),
+                    $admin['id']
+                ]);
             } else {
-                // update query
-                if (!empty($password)) {
-                    $update = $db->prepare("UPDATE admin SET name=?, password=? WHERE id=?");
-                    $update->execute([
-                        $name,
-                        ($password),
-                        $admin['id']
-                    ]);
-                } else {
-                    $update = $db->prepare("UPDATE admin SET name=? WHERE id=?");
-                    $update->execute([$name, $admin['id']]);
-                }
-
-                $_SESSION['admin_name'] = $name;
-                $success = "Profile updated successfully! 🎉";
-
-                // refresh data
-                $adminData['name'] = $name;
+                $update = $db->prepare("UPDATE admin SET name=? WHERE id=?");
+                $update->execute([$name, $admin['id']]);
             }
+
+            $_SESSION['admin_name'] = $name;
+            $success = "Profile updated successfully! 🎉";
+
+            // refresh data
+            $adminData['name'] = $name;
         }
+    }
     // }
 }
 ?>
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../css/adminStyle.css">
+    <link rel="stylesheet" href="../css/admin-Style.css">
 
 
 </head>
