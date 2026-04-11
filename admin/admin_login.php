@@ -2,9 +2,14 @@
 @include '../components/connect.php';
 session_start();
 
+// 🔥 Prevent redirect loop
+if (isset($_SESSION['admin_id'])) {
+    header('location:dashboard.php');
+    exit();
+}
+
 $error = '';
 
-// simple sanitize function (you forgot to define it)
 function sanitize($data)
 {
     return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
@@ -25,14 +30,17 @@ if (isset($_POST['submit'])) {
 
         if ($admin) {
 
-            // simple password check
             if ($pass == $admin['password']) {
 
+                // ✅ SET SESSION
                 $_SESSION['admin_id'] = $admin['id'];
                 $_SESSION['admin_name'] = $admin['name'];
 
+                // 🔥 DEBUG (temporary)
+                // print_r($_SESSION); exit();
+
                 header('location:dashboard.php');
-                exit;
+                exit();
             } else {
                 $error = "Wrong password!";
             }

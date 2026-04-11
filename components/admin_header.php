@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Get admin data from database
-$admin_id = $_SESSION['admin_id'] ?? 1;
+$admin_id = $_SESSION['admin_id'];
 $select_admin = $conn->prepare("SELECT * FROM admin WHERE id = ?");
 $select_admin->execute([$admin_id]);
 $currentAdmin = $select_admin->fetch(PDO::FETCH_ASSOC);

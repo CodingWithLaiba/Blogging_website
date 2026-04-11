@@ -2,9 +2,11 @@
 @include '../components/connect.php';
 session_start();
 
-$admin_id = $_SESSION['admin_id'];
-if (!isset($admin_id)) {
-    header('location:admin_login.php');
+$admin_id = $_SESSION['admin_id'] ?? null;
+
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: admin_login.php");
+    exit();
 }
 $select_admin = $conn->prepare("SELECT * FROM admin WHERE id = ?");
 $select_admin->execute([$admin_id]);
@@ -181,7 +183,9 @@ function formatDate($date)
                                 </div>
                                 <div class="dash-post-actions">
                                     <a href="edit_post.php?id=<?= $post['id'] ?>" class="dash-action-btn edit" title="Edit"><i class="fas fa-edit"></i></a>
-                                    <a href="delete-post.php?id=<?= $post['id'] ?>" class="dash-action-btn del btn-delete-confirm" data-name="this post" title="Delete"><i class="fas fa-trash"></i></a>
+                                    <a href="view_posts.php?delete=<?= $post['id'] ?>"
+                                        class="dash-action-btn del"
+                                        onclick="return confirm('Delete this post?')" class="dash-action-btn del btn-delete-confirm" data-name="this post" title="Delete"><i class="fas fa-trash"></i></a>
                                 </div>
                             </div>
                         <?php endforeach; ?>

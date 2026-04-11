@@ -5,10 +5,10 @@ require_once '../includes/functions.php';
 session_start();
 
 $admin_id = $_SESSION['admin_id'];
-if (!isset($admin_id)) {
-    header('location:admin_login.php');
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: admin_login.php");
+    exit();
 }
-
 
 requireAdminLogin();
 
