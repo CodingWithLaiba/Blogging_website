@@ -67,10 +67,10 @@ $pageTitle = 'Manage Comments';
                                     <p style="margin:0;font-size:0.82rem;color:var(--text-dark);"><?= sanitize(substr($c['comment'], 0, 100)) ?><?= strlen($c['comment']) > 100 ? '...' : '' ?></p>
                                 </td>
                                 <td>
-                                    <a href="view_posts.php" target="_blank" style="font-size:0.8rem;color:var(--primary);"><?= sanitize(substr($c['post_title'], 0, 35)) ?>...</a>
+                                    <a href="read_post.php?id=<?= $c['post_id'] ?>" target="_blank" style="font-size:0.8rem;color:var(--primary); text-decoration: none;"><?= sanitize(substr($c['post_title'], 0, 35)) ?>...</a>
                                 </td>
                                 <td style="font-size:0.78rem;white-space:nowrap;"><?= formatDate($c['date']) ?></td>
-                               
+
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

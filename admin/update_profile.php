@@ -2,7 +2,7 @@
 @include '../components/connect.php';
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
-session_start();
+
 
 $admin_id = $_SESSION['admin_id'];
 if (!isset($_SESSION['admin_id'])) {
