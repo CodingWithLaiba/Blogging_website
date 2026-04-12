@@ -1,12 +1,21 @@
 <?php
 @include '../components/connect.php';
-session_start();
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+
 
 $admin_id = $_SESSION['admin_id'];
 if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
 
+requireAdminLogin(); // 
+
+$currentAdmin = getCurrentAdmin();
+
+//  FETCH ALL ADMINS
+$stmt = $conn->query("SELECT * FROM admin ORDER BY id DESC");
+$admins = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -29,7 +38,85 @@ if (!isset($admin_id)) {
     <?php include '../components/admin_header.php'; ?>
 
 
+    <div class="container mt-4">
+        <div class=" mx-auto">
+            <div class="admin-table-card">
 
+                <div class="admin-table-header">
+                    <h5>
+                        <i class="fas fa-user-shield me-2"></i>
+                        Admin Accounts (<?= count($admins) ?>)
+                    </h5>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table admin-table mb-0">
+                        <thead style="background-color: aliceblue;">
+                            <tr>
+                                <th>#</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <?php if (empty($admins)): ?>
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        No admins found
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+
+                                <?php foreach ($admins as $a): ?>
+                                    <tr>
+                                        <td><?= $a['id'] ?></td>
+
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+
+                                                <!-- Avatar -->
+                                                <div class="user-avatar" style="width:30px;height:30px;">
+                                                    <?= strtoupper(substr($a['name'], 0, 1)) ?>
+                                                </div>
+
+                                                <span><?= sanitize($a['name']) ?></span>
+
+                                                <!-- Current user -->
+                                                <?php if ($a['id'] == $currentAdmin['id']): ?>
+                                                    <span class="badge bg-primary">You</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <span class="badge bg-success">Administrator</span>
+                                        </td>
+
+                                        <td>
+                                            <?php if ($a['id'] != $currentAdmin['id']): ?>
+                                                <a href="delete-admin.php?id=<?= $a['id'] ?>"
+                                                    class="btn btn-sm btn-danger btn-delete-confirm"
+                                                    data-name="<?= sanitize($a['name']) ?>">
+                                                    <i class="fas fa-trash"></i> Remove
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="text-muted small">Protected</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+
+                            <?php endif; ?>
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
 
 
