@@ -1,35 +1,48 @@
 <?php
+
+//  Connect database
 @include '../components/connect.php';
+
+//  Include auth + helper functions
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 
 
+// 🔹 Get logged-in admin ID from session
 $admin_id = $_SESSION['admin_id'];
+
+//  If not logged in → redirect to login page
 if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
 
+// Extra security check (auth.php function)
 requireAdminLogin();
 
+//  Get current logged-in admin details
 $currentAdmin = getCurrentAdmin();
 
-//  FETCH ALL ADMINS
+
+// 🔹 FETCH ALL ADMINS FROM DATABASE
 $stmt = $conn->query("SELECT * FROM admin ORDER BY id DESC");
 $admins = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// DELETE ADMIN (simple)
+
+// 🔹 DELETE ADMIN (simple logic)
 if (isset($_GET['delete'])) {
 
+    // get admin id from URL
     $delete_id = $_GET['delete'];
 
-    // don't delete yourself
+    // prevent deleting yourself
     if ($delete_id != $currentAdmin['id']) {
 
+        // delete admin from DB
         $stmt = $conn->prepare("DELETE FROM admin WHERE id = ?");
         $stmt->execute([$delete_id]);
-
     }
 
+    // reload page after delete
     header("Location: admin_accounts.php");
     exit;
 }
@@ -68,7 +81,10 @@ if (isset($_GET['delete'])) {
 
                 <div class="table-responsive">
                     <table class="table admin-table mb-0">
+                        <!-- Table Head -->
+
                         <thead style="background-color: aliceblue;">
+
                             <tr>
                                 <th>#</th>
                                 <th>Username</th>
@@ -78,6 +94,7 @@ if (isset($_GET['delete'])) {
                         </thead>
 
                         <tbody>
+                            <!-- if no admin -->
                             <?php if (empty($admins)): ?>
                                 <tr>
                                     <td colspan="4" class="text-center text-muted py-4">
@@ -88,6 +105,7 @@ if (isset($_GET['delete'])) {
 
                                 <?php foreach ($admins as $a): ?>
                                     <tr>
+                                        <!-- Admin ID -->
                                         <td><?= $a['id'] ?></td>
 
                                         <td>
@@ -97,7 +115,7 @@ if (isset($_GET['delete'])) {
                                                 <div class="user-avatar" style="width:30px;height:30px;">
                                                     <?= strtoupper(substr($a['name'], 0, 1)) ?>
                                                 </div>
-
+                                                <!--  Admin Name -->
                                                 <span><?= sanitize($a['name']) ?></span>
 
                                                 <!-- Current user -->
@@ -106,18 +124,23 @@ if (isset($_GET['delete'])) {
                                                 <?php endif; ?>
                                             </div>
                                         </td>
+                                        <!--  Role -->
 
                                         <td>
                                             <span class="badge bg-success">Administrator</span>
                                         </td>
-
+                                        <!--  Actions -- -->
                                         <td>
+                                            <!-- If NOT current admin → allow delete -->
+
                                             <?php if ($a['id'] != $currentAdmin['id']): ?>
                                                 <a href="?delete=<?= $a['id'] ?>"
-                                                 class="btn btn-sm btn-danger btn-delete-confirm"
+                                                    class="btn btn-sm btn-danger btn-delete-confirm"
                                                     data-name="<?= sanitize($a['name']) ?>">
                                                     <i class="fas fa-trash"></i> Remove
                                                 </a>
+                                                <!-- Protect current admin -->
+
                                             <?php else: ?>
                                                 <span class="text-muted small p-2 rounded-3 bg-warning">Protected</span>
                                             <?php endif; ?>

@@ -1,40 +1,48 @@
 <?php
 require_once __DIR__ . '/../components/connect.php';
 
-
-function getDB() {
+/**
+ * 🔹 Get Database Connection
+ * Returns PDO connection from connect.php
+ */
+function getDB()
+{
     require __DIR__ . '/../components/connect.php';
     return $conn;
 }
 
-function sanitize($data) {
+/**
+ *  Sanitize Output
+ * Prevent XSS (security) when printing data in HTML
+ */
+function sanitize($data)
+{
     return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
 }
+// function hashPassword($password)
 
-// function hashPassword($password) {
-//     return password_hash($password, PASSWORD_DEFAULT);
-// }
-
-function verifyPassword($password, $hash ) {
+ // return password_hash($password, PASSWORD_DEFAULT); // }
+/**
+ *  Verify Password
+ * Checks entered password with hashed password from DB
+ */
+function verifyPassword($password, $hash)
+{
     return password_verify($password, $hash);
 }
+// for csrf protection
 
-// function csrfToken() {
-//     if (!isset($_SESSION['csrf_token'])) {
-//         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-//     }
-//     return $_SESSION['csrf_token'];
-// }
+// function csrfToken() { // if (!isset($_SESSION['csrf_token'])) { // $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // } // return $_SESSION['csrf_token']; // } // function verifyCsrf() { // return isset($_POST['csrf_token']) && // $_POST['csrf_token'] === $_SESSION['csrf_token']; // }
 
-// function verifyCsrf() {
-//     return isset($_POST['csrf_token']) &&
-//            $_POST['csrf_token'] === $_SESSION['csrf_token'];
-// }
-
-//search functions
-
-function searchPosts($query, $limit, $offset) {
+/**
+ *  Search Posts
+ * Finds posts by title, content, or category
+ * Also returns like count & comment count
+ */
+function searchPosts($query, $limit, $offset)
+{
     $conn = getDB();
+
     $stmt = $conn->prepare("
         SELECT p.*, a.name,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
@@ -56,9 +64,14 @@ function searchPosts($query, $limit, $offset) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-
-function countSearchResults($query) {
+/**
+ *  Count Search Results
+ * Returns total number of posts matching search query
+ */
+function countSearchResults($query)
+{
     $conn = getDB();
+
     $stmt = $conn->prepare("
         SELECT COUNT(*) FROM posts
         WHERE title LIKE :q OR content LIKE :q OR category LIKE :q
@@ -66,13 +79,18 @@ function countSearchResults($query) {
 
     $search = "%$query%";
     $stmt->bindValue(':q', $search, PDO::PARAM_STR);
-    $stmt->execute();
 
+    $stmt->execute();
     return $stmt->fetchColumn();
 }
 
-function excerpt($text, $limit = 100) {
-    $text = strip_tags($text); // remove HTML
+/**
+ * Excerpt Function
+ * Shortens long text (used for preview in cards)
+ */
+function excerpt($text, $limit = 100)
+{
+    $text = strip_tags($text);
 
     if (strlen($text) > $limit) {
         return substr($text, 0, $limit) . '...';
@@ -81,8 +99,14 @@ function excerpt($text, $limit = 100) {
     return $text;
 }
 
-function getAllCategories() {
+/**
+ *Get All Categories
+ * Returns categories with total post count
+ */
+function getAllCategories()
+{
     $conn = getDB();
+
     $stmt = $conn->query("
         SELECT category, COUNT(*) as post_count
         FROM posts
@@ -93,7 +117,12 @@ function getAllCategories() {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function getPostById($id) {
+/**
+ *  Get Single Post By ID
+ * Fetch full post with author name, likes & comments count
+ */
+function getPostById($id)
+{
     $db = getDB();
 
     $stmt = $db->prepare("
@@ -109,24 +138,36 @@ function getPostById($id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function formatDate($date) {
+/**
+ * Format Date
+ * Converts date into readable format (e.g. 12 Jan 2025)
+ */
+function formatDate($date)
+{
     return date("d M Y", strtotime($date));
 }
 
-function timeAgo($datetime) {
+/**
+ * Time Ago Function
+ * Shows relative time (e.g. 2 hours ago)
+ */
+function timeAgo($datetime)
+{
     $time = strtotime($datetime);
     $diff = time() - $time;
 
     if ($diff < 60) return $diff . " sec ago";
-    if ($diff < 3600) return floor($diff/60) . " min ago";
-    if ($diff < 86400) return floor($diff/3600) . " hrs ago";
-    return floor($diff/86400) . " days ago";
+    if ($diff < 3600) return floor($diff / 60) . " min ago";
+    if ($diff < 86400) return floor($diff / 3600) . " hrs ago";
+    return floor($diff / 86400) . " days ago";
 }
 
-
-// 
-
-function getAllCommentsAdmin() {
+/**
+ * Get All Comments (Admin Panel)
+ * Returns all comments with user name and post title
+ */
+function getAllCommentsAdmin()
+{
     $db = getDB();
 
     $stmt = $db->query("
@@ -145,4 +186,3 @@ function getAllCommentsAdmin() {
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-

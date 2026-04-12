@@ -32,7 +32,7 @@ if (isset($_POST['submit'])) {
 
             if ($pass == $admin['password']) {
 
-                // ✅ SET SESSION
+                // SET SESSION
                 $_SESSION['admin_id'] = $admin['id'];
                 $_SESSION['admin_name'] = $admin['name'];
 
