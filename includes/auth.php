@@ -17,3 +17,7 @@ function getCurrentAdmin() {
         'name' => $_SESSION['admin_name']
     ];
 }
+
+function isUserLoggedIn() {
+    return isset($_SESSION['user_id']) && isset($_SESSION['user_name']);
+}
