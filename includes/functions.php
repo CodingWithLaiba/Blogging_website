@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../components/connect.php';
 
 /**
- * 🔹 Get Database Connection
+ *  Get Database Connection
  * Returns PDO connection from connect.php
  */
 function getDB()

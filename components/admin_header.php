@@ -19,7 +19,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <aside class="admin-sidebar" id="adminSidebar">
 
     <a href="dashboard.php" class="sidebar-brand">
-        Blog<span class="text-warning">Sphere</span>
+            <p class="auth-panel-logo">Blog<span>Sphere</span></p>
         <span class="admin-text">ADMIN PANEL</span>
     </a>
 

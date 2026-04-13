@@ -13,7 +13,16 @@
   --transition: 0.3s ease;
   --border: #eee;
 }
-
+.auth-panel-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 0;
+}
+.auth-panel-logo span { color: #f59e0b; }
 .admin-sidebar {
   position: fixed;
   left: 0;
@@ -25,30 +34,10 @@
   padding: 20px 10px;
   transition: 0.3s;
   z-index: 1000;
-
-  overflow-y: auto;
-
-  /* Firefox */
-  scrollbar-width: thin;
-  scrollbar-color: #4a6fa5 #0f2747;
+  overflow-y: scroll;
 }
-
-/* Chrome, Edge, Safari */
 .admin-sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.admin-sidebar::-webkit-scrollbar-track {
-  background: #0f2747;
-}
-
-.admin-sidebar::-webkit-scrollbar-thumb {
-  background-color: #4a6fa5;
-  border-radius: 10px;
-}
-
-.admin-sidebar::-webkit-scrollbar-thumb:hover {
-  background-color: #6c8fc7;
+  display: none;
 }
 
 .sidebar-brand {
