@@ -59,7 +59,7 @@ $pageTitle = 'Read Post';
                 <i class="fas fa-arrow-left"></i> Back to All Posts
             </a>
             <div class="flex gap-3">
-                <a href="edit-post.php?id=<?= $post['id'] ?>" class="btn btn-sm" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:0.4rem 1rem;border-radius:8px;font-size:0.82rem;font-weight:600;">
+                <a href="edit_post.php?id=<?= $post['id'] ?>" class="btn btn-sm" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:0.4rem 1rem;border-radius:8px;font-size:0.82rem;font-weight:600;">
                     <i class="fas fa-edit me-1"></i>Edit Post
                 </a>
                 <a href="../post.php?id=<?= $post['id'] ?>" target="_blank" class="btn btn-sm" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:0.4rem 1rem;border-radius:8px;font-size:0.82rem;font-weight:600;">
