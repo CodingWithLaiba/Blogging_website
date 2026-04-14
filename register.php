@@ -5,7 +5,7 @@ require_once 'includes/functions.php';
 
 // If user already logged in, redirect to home page
 if (isUserLoggedIn()) {
-    header('Location: index.php');
+    header('Location: home.php');
     exit;
 }
 
@@ -48,8 +48,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
             $stmt->execute([$name, $email, $password]);
 
+            // Get last inserted user ID
+            $userId = $db->lastInsertId();
+
+            // Start session login
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['user_name'] = $name;
+
+            // Redirect to home page
+            header("Location: home.php");
+            exit;
+
             // Success message
-            $success = "Account created successfully! You can login now.";
+            $success = "Account created successfully! You can now <a href='login.php' style = 'text-decoration:underline; color:#065f46'>login</a>.";
         }
     }
 }
@@ -142,7 +153,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?= $error ?>
                     </div>
                 <?php endif; ?>
-
+                <?php if ($success): ?>
+                    <div class="auth-alert auth-alert-success">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <?= $success ?>
+                    </div>
+                <?php endif; ?>
                 <form method="POST" id="registerForm">
                     <input type="hidden" name="csrf_token">
 
@@ -194,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <button type="submit" class="auth-submit-btn auth-submit-accent">
-                        <i class="fas fa-user-plus me-2"></i>Create My Free Account
+                        <i class="fas fa-user-plus me-2"></i>Create Account
                     </button>
                 </form>
 
