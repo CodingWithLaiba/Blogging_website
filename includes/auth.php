@@ -21,3 +21,22 @@ function getCurrentAdmin() {
 function isUserLoggedIn() {
     return isset($_SESSION['user_id']) && isset($_SESSION['user_name']);
 }
+function requireUserLogin() {
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+}
+
+function getCurrentUser() {
+    if (!isset($_SESSION['user_id'])) {
+        return null;
+    }
+
+    $db = getDB();
+
+    $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
