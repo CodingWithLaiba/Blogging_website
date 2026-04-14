@@ -1,156 +1,39 @@
 <?php
 require_once __DIR__ . '/../components/connect.php';
 
-/**
- *  Get Database Connection
- * Returns PDO connection from connect.php
- */
+/* =====================================================
+   DATABASE CONNECTION
+===================================================== */
 function getDB()
 {
     require __DIR__ . '/../components/connect.php';
     return $conn;
 }
 
-/**
- *  Sanitize Output
- * Prevent XSS (security) when printing data in HTML
- */
+/* =====================================================
+   SECURITY HELPERS
+===================================================== */
 function sanitize($data)
 {
-    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
 }
-// function hashPassword($password)
 
- // return password_hash($password, PASSWORD_DEFAULT); // }
-/**
- *  Verify Password
- * Checks entered password with hashed password from DB
- */
+/* =====================================================
+   AUTH HELPERS
+===================================================== */
 function verifyPassword($password, $hash)
 {
     return password_verify($password, $hash);
 }
-// for csrf protection
 
-// function csrfToken() { // if (!isset($_SESSION['csrf_token'])) { // $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // } // return $_SESSION['csrf_token']; // } // function verifyCsrf() { // return isset($_POST['csrf_token']) && // $_POST['csrf_token'] === $_SESSION['csrf_token']; // }
-
-/**
- *  Search Posts
- * Finds posts by title, content, or category
- * Also returns like count & comment count
- */
-function searchPosts($query, $limit, $offset)
-{
-    $conn = getDB();
-
-    $stmt = $conn->prepare("
-        SELECT p.*, a.name,
-        (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
-        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
-        FROM posts p
-        JOIN admin a ON p.admin_id = a.id
-        WHERE p.title LIKE :q OR p.content LIKE :q OR p.category LIKE :q
-        ORDER BY p.date DESC
-        LIMIT :limit OFFSET :offset
-    ");
-
-    $search = "%$query%";
-
-    $stmt->bindValue(':q', $search, PDO::PARAM_STR);
-    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-/**
- *  Count Search Results
- * Returns total number of posts matching search query
- */
-function countSearchResults($query)
-{
-    $conn = getDB();
-
-    $stmt = $conn->prepare("
-        SELECT COUNT(*) FROM posts
-        WHERE title LIKE :q OR content LIKE :q OR category LIKE :q
-    ");
-
-    $search = "%$query%";
-    $stmt->bindValue(':q', $search, PDO::PARAM_STR);
-
-    $stmt->execute();
-    return $stmt->fetchColumn();
-}
-
-/**
- * Excerpt Function
- * Shortens long text (used for preview in cards)
- */
-function excerpt($text, $limit = 100)
-{
-    $text = strip_tags($text);
-
-    if (strlen($text) > $limit) {
-        return substr($text, 0, $limit) . '...';
-    }
-
-    return $text;
-}
-
-/**
- *Get All Categories
- * Returns categories with total post count
- */
-function getAllCategories()
-{
-    $conn = getDB();
-
-    $stmt = $conn->query("
-        SELECT category, COUNT(*) as post_count
-        FROM posts
-        GROUP BY category
-        ORDER BY category ASC
-    ");
-
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-/**
- *  Get Single Post By ID
- * Fetch full post with author name, likes & comments count
- */
-function getPostById($id)
-{
-    $db = getDB();
-
-    $stmt = $db->prepare("
-        SELECT p.*, a.name,
-        (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
-        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
-        FROM posts p
-        JOIN admin a ON p.admin_id = a.id
-        WHERE p.id = ?
-    ");
-
-    $stmt->execute([$id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-/**
- * Format Date
- * Converts date into readable format (e.g. 12 Jan 2025)
- */
+/* =====================================================
+   FORMAT HELPERS
+===================================================== */
 function formatDate($date)
 {
-    return date("d M Y", strtotime($date));
+    return date("F d, Y", strtotime($date));
 }
 
-/**
- * Time Ago Function
- * Shows relative time (e.g. 2 hours ago)
- */
 function timeAgo($datetime)
 {
     $time = strtotime($datetime);
@@ -162,27 +45,267 @@ function timeAgo($datetime)
     return floor($diff / 86400) . " days ago";
 }
 
-/**
- * Get All Comments (Admin Panel)
- * Returns all comments with user name and post title
- */
-function getAllCommentsAdmin()
+function excerpt($text, $limit = 150)
+{
+    $text = strip_tags($text);
+
+    if (strlen($text) <= $limit) {
+        return $text;
+    }
+
+    return substr($text, 0, $limit) . '...';
+}
+
+/* =====================================================
+   POSTS (HOME PAGE CORE)
+===================================================== */
+
+function getAllPosts($limit = 6, $offset = 0)
+{
+    $db = getDB();
+
+    $stmt = $db->prepare("
+        SELECT 
+            p.*,
+            (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
+            (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
+        FROM posts p
+        WHERE p.status = 'active'
+        ORDER BY p.date DESC, p.id DESC
+        LIMIT ? OFFSET ?
+    ");
+
+    $stmt->bindValue(1, (int)$limit, PDO::PARAM_INT);
+    $stmt->bindValue(2, (int)$offset, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function countAllPosts()
+{
+    $db = getDB();
+
+    $stmt = $db->query("SELECT COUNT(*) FROM posts WHERE status = 'active'");
+    return (int)$stmt->fetchColumn();
+}
+
+function getPostById($id)
+{
+    $db = getDB();
+
+    $stmt = $db->prepare("
+        SELECT 
+            p.*,
+            (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
+            (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
+        FROM posts p
+        WHERE p.id = ?
+    ");
+
+    $stmt->execute([$id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+/* =====================================================
+   SIDEBAR FUNCTIONS
+===================================================== */
+
+function getRecentPosts($limit = 5)
+{
+    $db = getDB();
+
+    $stmt = $db->prepare("
+        SELECT id, title, date, image
+        FROM posts
+        WHERE status = 'active'
+        ORDER BY date DESC, id DESC
+        LIMIT ?
+    ");
+
+    $stmt->bindValue(1, (int)$limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getAllCategories()
 {
     $db = getDB();
 
     $stmt = $db->query("
-        SELECT 
-            comments.id,
-            comments.comment,
-            comments.date,
-            comments.post_id,
-            users.name AS user_name,
-            posts.title AS post_title
-        FROM comments
-        JOIN users ON users.id = comments.user_id
-        JOIN posts ON posts.id = comments.post_id
-        ORDER BY comments.date DESC
+        SELECT category, COUNT(*) as post_count
+        FROM posts
+        WHERE status = 'active'
+        GROUP BY category
+        ORDER BY post_count DESC
     ");
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* =====================================================
+   SEARCH FUNCTIONS
+===================================================== */
+
+function searchPosts($query, $limit = 10, $offset = 0)
+{
+    $db = getDB();
+
+    $q = "%$query%";
+
+    $stmt = $db->prepare("
+        SELECT 
+            p.*,
+            u.name,
+            (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
+            (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
+        FROM posts p
+        LEFT JOIN users u ON u.id = p.user_id
+        WHERE (p.title LIKE ? OR p.content LIKE ? OR p.category LIKE ?)
+        AND p.status = 'active'
+        ORDER BY p.date DESC
+        LIMIT ? OFFSET ?
+    ");
+
+    $stmt->execute([$q, $q, $q, $limit, $offset]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function countSearchResults($query)
+{
+    $db = getDB();
+
+    $q = "%$query%";
+
+    $stmt = $db->prepare("
+        SELECT COUNT(*)
+        FROM posts
+        WHERE (title LIKE ? OR content LIKE ? OR category LIKE ?)
+        AND status = 'active'
+    ");
+
+    $stmt->execute([$q, $q, $q]);
+
+    return (int)$stmt->fetchColumn();
+}
+
+/* =====================================================
+   COMMENTS
+===================================================== */
+
+function getPostComments($postId)
+{
+    $db = getDB();
+
+    $stmt = $db->prepare("
+        SELECT * 
+        FROM comments 
+        WHERE post_id = ? 
+        ORDER BY date DESC
+    ");
+
+    $stmt->execute([$postId]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* =====================================================
+   LIKES
+===================================================== */
+
+function hasUserLiked($userId, $postId)
+{
+    $db = getDB();
+
+    $stmt = $db->prepare("
+        SELECT COUNT(*) 
+        FROM likes 
+        WHERE user_id = ? AND post_id = ?
+    ");
+
+    $stmt->execute([$userId, $postId]);
+
+    return (bool)$stmt->fetchColumn();
+}
+
+/* =====================================================
+   IMAGE HELPER
+===================================================== */
+
+function postImageUrl($image)
+{
+    if (empty($image)) {
+        return 'assets/images/default-post.svg';
+    }
+
+    return 'uploaded_img/' . $image;
+}
+
+/* =====================================================
+   ADMIN STATS (HOMEPAGE)
+===================================================== */
+
+function getAdminStats()
+{
+    $db = getDB();
+
+    return [
+        'total_posts' => (int)$db->query("SELECT COUNT(*) FROM posts")->fetchColumn(),
+        'total_users' => (int)$db->query("SELECT COUNT(*) FROM users")->fetchColumn(),
+        'total_comments' => (int)$db->query("SELECT COUNT(*) FROM comments")->fetchColumn(),
+        'total_likes' => (int)$db->query("SELECT COUNT(*) FROM likes")->fetchColumn(),
+    ];
+}
+
+/* ================== GET CURRENT USER ================== */
+function getCurrentUser()
+{
+    if (isset($_SESSION['user_id'])) {
+
+        $db = getDB(); // make sure this function exists
+
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    return null;
+}
+
+/* ================== FLASH MESSAGE ================== */
+function getFlash()
+{
+    if (!empty($_SESSION['flash'])) {
+        $flash = $_SESSION['flash'];
+        unset($_SESSION['flash']); // show only once
+        return $flash;
+    }
+
+    return null;
+}
+
+/* OPTIONAL: SET FLASH MESSAGE */
+function setFlash($type, $message)
+{
+    $_SESSION['flash'] = [
+        'type' => $type,
+        'message' => $message
+    ];
+}
+
+// ================== CSRF TOKEN GENERATOR ==================
+function csrfToken()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_token'];
 }
