@@ -42,7 +42,7 @@ $categories = function_exists('getAllCategories') ? getAllCategories() : [];
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="./css/admin_Style.css">
+    <link rel="stylesheet" href="./css/admin_style.css">
     <link rel="stylesheet" href="./css/style.css">
 </head>
 
@@ -82,15 +82,74 @@ $categories = function_exists('getAllCategories') ? getAllCategories() : [];
             <!-- LEFT -->
             <div class="col-lg-8">
 
-                <div class="text-center py-5">
+                <?php if (empty($query)): ?>
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fs-2 mb-2"></i>
+                        <h4 class="fw-semibold">Search for Posts</h4>
+                        <p class="text-muted">
+                            Enter keywords above to find articles you're interested in.
+                        </p>
+                    </div>
+                <?php elseif (empty($posts)): ?>
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fs-2 mb-2"></i>
+                        <h4 class="fw-semibold">No Results Found</h4>
+                        <p class="text-muted">
+                            No posts found matching "<strong><?= htmlspecialchars($query) ?></strong>"
+                        </p>
+                    </div>
+                <?php else: ?>
+                    <div class="mb-3">
+                        <h5 class="fw-semibold">Search Results for "<strong><?= htmlspecialchars($query) ?></strong>"</h5>
+                        <p class="text-muted small"><?= $totalPosts ?> result(s) found</p>
+                    </div>
 
+                    <div class="row g-4">
+                        <?php foreach ($posts as $post): ?>
+                            <div class="col-md-6 col-xl-4 fade-in-up">
+                                <div class="post-card">
+                                    <div class="post-card-img-wrapper">
+                                        <?php if ($post['image']): ?>
+                                            <img src="<?= 'uploaded_img/' . $post['image'] ?>" alt="<?= sanitize($post['title']) ?>" class="post-card-img">
+                                        <?php else: ?>
+                                            <div class="img-placeholder" style="height:220px;"><i class="fas fa-image"></i></div>
+                                        <?php endif; ?>
+                                        <span class="post-card-category"><?= sanitize($post['category']) ?></span>
+                                    </div>
+                                    <div class="post-card-body">
+                                        <h3 class="post-card-title"><a href="view_post.php?id=<?= $post['id'] ?>"><?= sanitize($post['title']) ?></a></h3>
+                                        <p class="post-card-excerpt"><?= excerpt($post['content'], 120) ?></p>
+                                        <div class="post-card-meta">
+                                            <div>
+                                                <span class="author"><i class="fas fa-user-circle me-1"></i><?= sanitize($post['name']) ?></span>
+                                                <br><small style="color:var(--text-muted);"><?= formatDate($post['date']) ?></small>
+                                            </div>
+                                            <div class="stats">
+                                                <span class="stat-like"><i class="fas fa-heart"></i> <?= $post['like_count'] ?></span>
+                                                <span class="stat-comment"><i class="fas fa-comment"></i> <?= $post['comment_count'] ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
 
-                    <i class="fas fa-search fs-2 mb-2"></i>
-                    <h4 class="fw-semibold">Search for Posts</h4>
-                    <p class="text-muted">
-                        Enter keywords above to find articles you're interested in.
-                    </p>
-                </div>
+                    <!-- Pagination -->
+                    <?php if ($totalPages > 1): ?>
+                        <nav class="d-flex justify-content-center mt-4">
+                            <ul class="pagination">
+                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                    <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                        <a class="page-link" href="?q=<?= urlencode($query) ?>&page=<?= $i ?>">
+                                            <?= $i ?>
+                                        </a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
+                    <?php endif; ?>
+                <?php endif; ?>
 
             </div>
 

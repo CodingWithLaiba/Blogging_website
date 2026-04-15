@@ -171,6 +171,10 @@ function searchPosts($query, $limit = 10, $offset = 0)
     $db = getDB();
 
     $q = "%$query%";
+    
+    // Ensure limit and offset are integers
+    $limit = (int)$limit;
+    $offset = (int)$offset;
 
     $stmt = $db->prepare("
         SELECT 
@@ -179,14 +183,14 @@ function searchPosts($query, $limit = 10, $offset = 0)
             (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
             (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
         FROM posts p
-        LEFT JOIN users u ON u.id = p.user_id
+        LEFT JOIN users u ON u.id = p.admin_id
         WHERE (p.title LIKE ? OR p.content LIKE ? OR p.category LIKE ?)
         AND p.status = 'active'
         ORDER BY p.date DESC
-        LIMIT ? OFFSET ?
+        LIMIT $limit OFFSET $offset
     ");
 
-    $stmt->execute([$q, $q, $q, $limit, $offset]);
+    $stmt->execute([$q, $q, $q]);
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }

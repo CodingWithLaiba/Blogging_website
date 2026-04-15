@@ -32,11 +32,11 @@ $pageDesc  = $pageDesc ?? 'BlogSphere - A modern blogging platform for content c
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap & Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
@@ -65,12 +65,14 @@ $pageDesc  = $pageDesc ?? 'BlogSphere - A modern blogging platform for content c
                                 <span style="color: rgba(255,255,255,0.9); font-size:0.85rem;"><?= sanitize($currentUser['name']) ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="<?= $basePath ?>profile.php"><i class="fas fa-user-edit me-2"></i>My Profile</a></li>
-                                <li><a class="dropdown-item" href="<?= $basePath ?>liked.php"><i class="fas fa-heart me-2"></i>Liked Posts</a></li>
+                                <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user-edit me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item" href="user_likes.php"><i class="fas fa-heart me-2"></i>Liked Posts</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                <li><a class="dropdown-item text-danger" href="<?= $basePath ?>logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="components/user_logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                                </li>
                             </ul>
                         </div>
                     <?php else: ?>
@@ -90,7 +92,7 @@ $pageDesc  = $pageDesc ?? 'BlogSphere - A modern blogging platform for content c
             </div>
         </div>
     <?php endif; ?>
-
+    <script src="bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

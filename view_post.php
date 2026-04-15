@@ -2,41 +2,85 @@
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
-
-// Get post ID from URL
+// Get post ID
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// If no ID → redirect
 if ($id <= 0) {
     header('Location: index.php');
     exit;
 }
 
-// Get post from database
+// Get post
 $post = getPostById($id);
 
-// If post not found OR not active → redirect
 if (!$post || $post['status'] !== 'active') {
     header('Location: index.php');
     exit;
 }
 
-// Get comments for this post
-$comments = getPostComments($id);
-
-// Get logged-in user (if any)
+// Get user
 $currentUser = getCurrentUser();
+$db = getDB();
 
+/* ================= LIKE LOGIC ================= */
+$userLiked = false;
 
-// Sidebar data
+if ($currentUser) {
+    $check = $db->prepare("SELECT id FROM likes WHERE user_id=? AND post_id=?");
+    $check->execute([$currentUser['id'], $id]);
+    $userLiked = $check->fetch() ? true : false;
+}
+
+// Handle like click
+if (isset($_GET['like']) && $currentUser) {
+
+    if ($userLiked) {
+        $db->prepare("DELETE FROM likes WHERE user_id=? AND post_id=?")
+            ->execute([$currentUser['id'], $id]);
+    } else {
+        $db->prepare("INSERT INTO likes (user_id, post_id) VALUES (?, ?)")
+            ->execute([$currentUser['id'], $id]);
+    }
+
+    header("Location: view_post.php?id=" . $id);
+    exit;
+}
+
+/* ================= COMMENT LOGIC ================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment'])) {
+
+    if (!$currentUser) {
+        header("Location: login.php");
+        exit;
+    }
+
+    $comment = trim($_POST['comment']);
+
+    if (!empty($comment)) {
+        $stmt = $db->prepare("
+            INSERT INTO comments (post_id, user_id, user_name, comment, date)
+            VALUES (?, ?, ?, ?, NOW())
+        ");
+        $stmt->execute([
+            $id,
+            $currentUser['id'],
+            $currentUser['name'],
+            $comment
+        ]);
+
+        header("Location: view_post.php?id=" . $id);
+        exit;
+    }
+}
+
+/* ================= FETCH DATA ================= */
+$comments = getPostComments($id);
 $categories = getAllCategories();
 $relatedPosts = getPostsByCategory($post['category'], 3);
 $recentPosts = getRecentPosts(4);
 
-// Page meta
 $pageTitle = $post['title'];
 $pageDesc = excerpt($post['content'], 160);
-
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +89,7 @@ $pageDesc = excerpt($post['content'], 160);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Profile</title>
+    <title>Post</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -75,7 +119,7 @@ $pageDesc = excerpt($post['content'], 160);
             <div class="col-lg-8">
                 <article class="post-single">
                     <?php if ($post['image']): ?>
-                        <img src="<?= '/uploaded_img/' . $post['image'] ?>" alt="<?= sanitize($post['title']) ?>" class="post-single-hero w-100">
+                        <img src="<?= 'uploaded_img/' . $post['image'] ?>" alt="<?= sanitize($post['title']) ?>" class="post-single-hero w-100">
                     <?php else: ?>
                         <div class="img-placeholder" style="height:350px;"><i class="fas fa-image"></i></div>
                     <?php endif; ?>
@@ -96,11 +140,11 @@ $pageDesc = excerpt($post['content'], 160);
                         <div class="post-content"><?= sanitize($post['content']) ?></div>
 
                         <div class="d-flex align-items-center gap-3 mt-4 pt-3 border-top">
-                            <button class="btn-like <?= $userLiked ? 'liked' : '' ?>" data-post-id="<?= $post['id'] ?>">
+                            <a href="?id=<?= $post['id'] ?>&like=1" class="btn-like <?= $userLiked ? 'liked' : '' ?>">
                                 <i class="fas fa-heart me-2"></i>
                                 <span class="like-text"><?= $userLiked ? 'Liked' : 'Like' ?></span>
                                 (<span class="like-count"><?= $post['like_count'] ?></span>)
-                            </button>
+                            </a>
                             <a href="category.php?cat=<?= urlencode($post['category']) ?>" class="btn btn-sm" style="background:var(--bg-light);border:1px solid var(--border);border-radius:20px;font-size:0.85rem;color:var(--text-dark);">
                                 <i class="fas fa-tag me-1"></i><?= sanitize($post['category']) ?>
                             </a>
@@ -132,7 +176,7 @@ $pageDesc = excerpt($post['content'], 160);
 
                     <?php if ($currentUser): ?>
                         <h5 class="mb-3" style="font-size:1.05rem;font-weight:600;">Leave a Comment</h5>
-                        <form id="commentForm">
+                        <form method="POST">
                             <input type="hidden">
                             <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
                             <div class="mb-3">
@@ -167,15 +211,15 @@ $pageDesc = excerpt($post['content'], 160);
                     <div class="sidebar-widget">
                         <h5 class="sidebar-widget-title"><i class="fas fa-fire me-2"></i>Related Posts</h5>
                         <?php foreach ($relatedPosts as $relp): ?>
-                            <?php if ($elrp['id'] == $post['id']) continue; ?>
+                            <?php if ($relp['id'] == $post['id']) continue; ?>
                             <div class="recent-post-item">
                                 <?php if ($post['image']): ?>
-                                    <img src="<?= '/uploaded_img/' . $post['image'] ?>" alt="" class="recent-post-thumb">
+                                    <img src="uploaded_img/<?= $relp['image'] ?>" alt="" class="recent-post-thumb">
                                 <?php else: ?>
                                     <div class="recent-post-thumb img-placeholder" style="min-height:60px;font-size:1.1rem;border-radius:6px;flex-shrink:0;"></div>
                                 <?php endif; ?>
                                 <div>
-                                    <a href="post.php?id=<?= $relp['id'] ?>" class="recent-post-title"><?= sanitize($relp['title']) ?></a>
+                                    <a href="view_post.php?id=<?= $relp['id'] ?>" class="recent-post-title"><?= sanitize($relp['title']) ?></a>
                                     <div class="recent-post-date"><?= formatDate($relp['date']) ?></div>
                                 </div>
                             </div>
@@ -188,12 +232,12 @@ $pageDesc = excerpt($post['content'], 160);
                     <?php foreach ($recentPosts as $rp): ?>
                         <div class="recent-post-item">
                             <?php if ($post['image']): ?>
-                                <img src="<?= '/uploaded_img/' . $post['image'] ?>" alt="" class="recent-post-thumb">
+                                <img src="<?= 'uploaded_img/' . $rp['image'] ?>" alt="" class="recent-post-thumb">
                             <?php else: ?>
                                 <div class="recent-post-thumb img-placeholder" style="min-height:60px;font-size:1.1rem;border-radius:6px;flex-shrink:0;"></div>
                             <?php endif; ?>
                             <div>
-                                <a href="post.php?id=<?= $rp['id'] ?>" class="recent-post-title"><?= sanitize($rp['title']) ?></a>
+                                <a href="view_post.php?id=<?= $rp['id'] ?>" class="recent-post-title"><?= sanitize($rp['title']) ?></a>
                                 <div class="recent-post-date"><?= formatDate($rp['date']) ?></div>
                             </div>
                         </div>

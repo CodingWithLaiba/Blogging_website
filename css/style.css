@@ -242,7 +242,7 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 }
 
 .btn-accent {
-    background: var(--accent);
+    background-color: #f59e0b;;
     border: none;
     color: #fff;
     border-radius: 25px;
@@ -250,6 +250,7 @@ textarea.form-control { resize: vertical; min-height: 120px; }
     font-weight: 600;
     font-size: 0.9rem;
     transition: var(--transition);
+    text-decoration: none;
 }
 
 .btn-accent:hover {
@@ -661,6 +662,16 @@ textarea.form-control { resize: vertical; min-height: 120px; }
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+/* ===== POST IMAGE PLACEHOLDER ===== */
+.img-placeholder {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 3rem;
+}
+
 
 
 /* ===== SECTION STYLES ===== */
