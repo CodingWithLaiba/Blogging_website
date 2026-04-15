@@ -36,134 +36,61 @@ $pageDesc  = $pageDesc ?? 'BlogSphere - A modern blogging platform for content c
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="<?= $basePath ?>css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-
-    <!-- ================== NAVBAR ================== -->
     <nav class="navbar navbar-blogsphere navbar-expand-lg">
         <div class="container">
-
-            <!-- Logo -->
-            <a class="navbar-brand" href="<?= $basePath ?>index.php">
-                Blog<span>Sphere</span>
-            </a>
-
-            <!-- Mobile Toggle -->
+            <a class="navbar-brand" href="<?= $basePath ?>index.php">Blog<span>Sphere</span></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
-            <!-- Menu -->
             <div class="collapse navbar-collapse" id="navMenu">
-
-                <!-- LEFT MENU -->
-                <ul class="navbar-nav me-auto ms-3">
-
-                    <!-- Home -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= $basePath ?>index.php">
-                            <i class="fas fa-home me-1"></i> Home
-                        </a>
-                    </li>
-
-                    <!-- Categories (show only first 5) -->
-                    <?php foreach (array_slice($categories, 0, 5) as $cat): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= $basePath ?>category.php?cat=<?= urlencode($cat['category']) ?>">
-                                <?= sanitize($cat['category']) ?>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+                    <li class="nav-item"><a class="nav-link" href="index.php"> <i class="fas fa-home me-1"></i>Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="posts.php"><i class="fas fa-file-alt me-1"></i>All Posts</a></li>
+                    <li class="nav-item"><a class="nav-link" href="all_category.php"><i class="fas fa-layer-group me-1"></i>Categories</a></li>
 
                 </ul>
-
-                <!-- SEARCH BAR -->
-                <form class="d-flex me-3" action="<?= $basePath ?>search.php" method="GET">
-                    <input
-                        type="search"
-                        name="q"
-                        class="form-control"
-                        placeholder="Search posts..."
-                        value="<?= sanitize($_GET['q'] ?? '') ?>">
-                    <button class="btn btn-dark ms-2" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
+                <form class="d-flex navbar-search me-3" action="<?= $basePath ?>search.php" method="GET">
+                    <input class="form-control" type="search" name="q" placeholder="Search posts..." value="<?= isset($_GET['q']) ? sanitize($_GET['q']) : '' ?>">
+                    <button class="btn-search" type="submit"><i class="fas fa-search"></i></button>
                 </form>
-
-                <!-- RIGHT SIDE (USER AREA) -->
-                <div class="d-flex align-items-center gap-2">
-
+                <div class="d-flex gap-2 align-items-center">
                     <?php if ($currentUser): ?>
-
-                        <!-- Logged in user dropdown -->
                         <div class="dropdown">
-
-                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
-                                href="#"
-                                data-bs-toggle="dropdown">
-
-                                <span class="user-avatar">
-                                    <?= strtoupper(substr($currentUser['name'], 0, 1)) ?>
-                                </span>
-
-                                <span>
-                                    <?= sanitize($currentUser['name']) ?>
-                                </span>
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+                                <span class="user-avatar"><?= strtoupper(substr($currentUser['name'], 0, 1)) ?></span>
+                                <span style="color: rgba(255,255,255,0.9); font-size:0.85rem;"><?= sanitize($currentUser['name']) ?></span>
                             </a>
-
                             <ul class="dropdown-menu dropdown-menu-end">
-
-                                <li>
-                                    <a class="dropdown-item" href="<?= $basePath ?>profile.php">
-                                        <i class="fas fa-user me-2"></i> Profile
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item" href="<?= $basePath ?>liked.php">
-                                        <i class="fas fa-heart me-2"></i> Liked Posts
-                                    </a>
-                                </li>
-
+                                <li><a class="dropdown-item" href="<?= $basePath ?>profile.php"><i class="fas fa-user-edit me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item" href="<?= $basePath ?>liked.php"><i class="fas fa-heart me-2"></i>Liked Posts</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-
-                                <li>
-                                    <a class="dropdown-item text-danger" href="<?= $basePath ?>logout.php">
-                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                    </a>
-                                </li>
-
+                                <li><a class="dropdown-item text-danger" href="<?= $basePath ?>logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                             </ul>
                         </div>
-
                     <?php else: ?>
-
-                        <!-- Guest buttons -->
-                        <a href="<?= $basePath ?>login.php" class="btn btn-outline-light btn-sm">
-                            Login
-                        </a>
-
-                        <a href="<?= $basePath ?>register.php" class="btn btn-primary btn-sm">
-                            Register
-                        </a>
-
+                        <a href="<?= $basePath ?>login.php" class="btn-navbar-login">Login</a>
+                        <a href="<?= $basePath ?>register.php" class="btn-navbar-register">Register</a>
                     <?php endif; ?>
-
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- ================== FLASH MESSAGE ================== -->
-    <?php if (!empty($flash)): ?>
+    <?php if ($flash): ?>
         <div class="container mt-3">
-            <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : $flash['type'] ?> alert-dismissible fade show">
+            <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : $flash['type'] ?> alert-dismissible alert-auto-dismiss fade show">
                 <?= sanitize($flash['message']) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>
     <?php endif; ?>
+
+</body>
+
+</html>
