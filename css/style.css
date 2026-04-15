@@ -241,6 +241,24 @@ textarea.form-control { resize: vertical; min-height: 120px; }
     color: #fff;
 }
 
+.btn-accent {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    border-radius: 25px;
+    padding: 0.65rem 2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.btn-accent:hover {
+    background: var(--accent-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(245,158,11,0.35);
+    color: #fff;
+}
+
 /* ===== USER AVATAR ===== */
 .user-avatar {
     width: 38px;
@@ -643,6 +661,132 @@ textarea.form-control { resize: vertical; min-height: 120px; }
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+
+/* ===== SECTION STYLES ===== */
+.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 0.4rem;
+}
+
+.section-divider {
+    width: 50px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+}
+
+
+/* ===== HERO SECTION ===== */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, #2d5282 100%);
+    padding: 4.5rem 0 3.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    background: rgba(245, 158, 11, 0.08);
+    border-radius: 50%;
+}
+
+.hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -5%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
+}
+
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.hero-title span { color: var(--accent); }
+.hero-subtitle { color: rgba(255,255,255,0.75); font-size: 1.05rem; font-weight: 300; }
+
+.hero-stats { margin-top: 2rem; }
+.hero-stat {
+    text-align: center;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+.hero-stat .stat-number {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'Poppins', sans-serif;
+}
+
+.hero-stat .stat-label {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.65);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+/* ===== FOOTER ===== */
+.site-footer {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #0f2340 100%);
+    color: rgba(255,255,255,0.75);
+    padding: 3.5rem 0 1.5rem;
+    margin-top: 4rem;
+}
+
+.footer-brand { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #fff; }
+.footer-brand span { color: var(--accent); }
+.footer-desc { font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.7; }
+
+.footer-heading { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 1rem; font-family: 'Poppins', sans-serif; }
+
+.footer-links li { margin-bottom: 0.5rem; }
+.footer-links a { color: rgba(255,255,255,0.65); font-size: 0.875rem; transition: var(--transition); }
+.footer-links a:hover { color: var(--accent); }
+
+.footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 1.5rem;
+    margin-top: 2.5rem;
+    font-size: 0.82rem;
+    text-align: center;
+    color: rgba(255,255,255,0.45);
+}
+
+.footer-social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+    transition: var(--transition);
+}
+
+.footer-social a:hover { background: var(--accent); color: #fff; }
 
 .recent-post-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
 @media (max-width:576px) {
