@@ -65,94 +65,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="auth-body">
 
     <div class="auth-page-wrapper">
+    <!-- Left Panel -->
+    <div class="auth-left-panel">
+        <div class="auth-left-inner">
+            <div class="auth-panel-deco deco-1"></div>
+            <div class="auth-panel-deco deco-2"></div>
+            <div class="auth-panel-deco deco-3"></div>
+            <div class="auth-panel-deco deco-4"></div>
 
-        <!-- LEFT PANEL -->
-        <div class="auth-left-panel">
-            <div class="auth-left-inner">
+            <a href="index.php" class="auth-panel-logo">Blog<span>Sphere</span></a>
 
-                <a href="index.php" class="auth-panel-logo">
-                    Blog<span>Sphere</span>
-                </a>
+            <div class="auth-panel-content">
+                <h2 class="auth-panel-heading">Welcome<br>Back!</h2>
+                <p class="auth-panel-sub">Sign in and continue your journey through stories, ideas, and knowledge.</p>
 
-                <div class="auth-panel-content">
-                    <h2 class="auth-panel-heading">Welcome Back</h2>
-                    <p class="auth-panel-sub">
-                        Login to continue reading and sharing blogs.
-                    </p>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL -->
-        <div class="auth-right-panel">
-            <div class="auth-right-inner">
-
-                <div class="auth-form-header">
-                    <h3>Sign In</h3>
-                    <p>Enter your credentials</p>
-                </div>
-
-                <!-- ERROR -->
-                <?php if ($error): ?>
-                    <div class="auth-alert auth-alert-danger">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <?= sanitize($error) ?>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST">
-
-                    <!-- Email -->
-                    <div class="auth-field">
-                        <label>Email</label>
-                        <div class="auth-input-wrap">
-                            <i class="fas fa-envelope auth-input-icon"></i>
-                            <input type="email" name="email" class="auth-input"
-                                value="<?= sanitize($_POST['email'] ?? '') ?>"
-                                placeholder="Enter email" required>
+                <div class="auth-panel-features">
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-icon"><i class="fas fa-pen-fancy"></i></div>
+                        <div>
+                            <strong>Publish Your Stories</strong>
+                            <span>Share your voice with the world</span>
                         </div>
                     </div>
-
-                    <!-- Password -->
-                    <div class="auth-field">
-                        <label>Password</label>
-                        <div class="auth-input-wrap">
-                            <i class="fas fa-lock auth-input-icon"></i>
-                            <input type="password" name="password" id="loginPass"
-                                class="auth-input" placeholder="Enter password" required>
-
-                            <button type="button" class="auth-eye-btn"
-                                onclick="togglePass('loginPass', this)">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-icon"><i class="fas fa-heart"></i></div>
+                        <div>
+                            <strong>Like &amp; Save Posts</strong>
+                            <span>Curate your favourite reads</span>
                         </div>
                     </div>
-
-                    <!-- Button -->
-                    <button type="submit" class="auth-submit-btn">
-                        <i class="fas fa-sign-in-alt me-2"></i> Login
-                    </button>
-
-                </form>
-
-                <!-- Switch -->
-                <div class="auth-switch">
-                    Don't have an account?
-                    <a href="register.php">Register</a>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-icon"><i class="fas fa-comments"></i></div>
+                        <div>
+                            <strong>Join the Discussion</strong>
+                            <span>Comment and engage with authors</span>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Back -->
-                <div class="auth-back-link">
-                    <a href="index.php">
-                        <i class="fas fa-arrow-left"></i> Back to Home
-                    </a>
-                </div>
-
+            <div class="auth-panel-quote">
+                <i class="fas fa-quote-left"></i>
+                <p>"The more that you read, the more things you will know."</p>
+                <span>— Dr. Seuss</span>
             </div>
         </div>
-
     </div>
+
+    <!-- Right Panel (Form) -->
+    <div class="auth-right-panel">
+        <div class="auth-right-inner">
+            <div class="auth-form-header">
+                <h3>Sign In</h3>
+                <p>Enter your credentials to access your account</p>
+            </div>
+
+            <?php if ($error): ?>
+            <div class="auth-alert auth-alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <?= sanitize($error) ?>
+            </div>
+            <?php endif; ?>
+
+            <form method="POST" id="loginForm">
+                <input type="hidden">
+                <input type="hidden" name="redirect" value="<?= sanitize($redirect) ?>">
+
+                <div class="auth-field">
+                    <label>Email Address</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-envelope auth-input-icon"></i>
+                        <input type="email" name="email" class="auth-input" placeholder="you@example.com" value="<?= sanitize($_POST['email'] ?? '') ?>" required>
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label>Password</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-lock auth-input-icon"></i>
+                        <input type="password" name="password" class="auth-input" id="loginPassword" placeholder="Enter your password" required>
+                        <button type="button" class="auth-eye-btn" onclick="togglePass('loginPassword', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-submit-btn">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In to BlogSphere
+                </button>
+            </form>
+
+            <div class="auth-divider"><span>or</span></div>
+
+            <div class="auth-switch">
+                Don't have an account?
+                <a href="register.php">Create one free <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+
+            <div class="auth-back-link">
+                <a href="index.php"><i class="fas fa-arrow-left me-1"></i>Back to BlogSphere</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 
     <script src="bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
