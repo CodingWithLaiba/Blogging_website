@@ -8,59 +8,58 @@ $offset = ($page - 1) * $perPage;
 
 $db = getDB();
 
+// Get filters
 $catFilter = trim($_GET['cat'] ?? '');
 $search    = trim($_GET['s'] ?? '');
 $sort      = $_GET['sort'] ?? 'newest';
 
+// Allowed sorting
 $allowedSorts = ['newest', 'oldest', 'popular'];
 $sort = in_array($sort, $allowedSorts) ? $sort : 'newest';
 
-/* ---------------- WHERE BUILD ---------------- */
+// Build WHERE clause
 $where  = "p.status = 'active'";
 $params = [];
 
-if ($catFilter !== '') {
+// Category filter
+if (!empty($catFilter)) {
     $where .= " AND p.category = ?";
     $params[] = $catFilter;
 }
 
-if ($search !== '') {
-    $where .= " AND (p.title LIKE ? OR p.content LIKE ?)";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
+// Search filter (FIXED - case insensitive)
+if (!empty($search)) {
+    $where .= " AND (LOWER(p.title) LIKE ? OR LOWER(p.content) LIKE ?)";
+    $params[] = "%" . strtolower($search) . "%";
+    $params[] = "%" . strtolower($search) . "%";
 }
 
-/* ---------------- ORDER BY ---------------- */
-$orderBy = match ($sort) {
-    'oldest'  => 'p.date ASC, p.id ASC',
-    'popular' => 'like_count DESC, p.date DESC',
-    default   => 'p.date DESC, p.id DESC',
-};
+// Sorting
+switch ($sort) {
+    case 'oldest':
+        $orderBy = "p.date ASC";
+        break;
+    case 'popular':
+        $orderBy = "like_count DESC";
+        break;
+    default:
+        $orderBy = "p.date DESC";
+}
 
-/* ---------------- COUNT QUERY ---------------- */
-$countStmt = $db->prepare("
-    SELECT COUNT(*) as cnt
-    FROM posts p
-    WHERE $where
-");
-
+// COUNT query
+$countSql = "SELECT COUNT(*) as cnt FROM posts p WHERE $where";
+$countStmt = $db->prepare($countSql);
 $countStmt->execute($params);
 $totalPosts = (int)$countStmt->fetch()['cnt'];
 $totalPages = max(1, ceil($totalPosts / $perPage));
 
-/* ---------------- MAIN QUERY (FIXED LIMIT ISSUE) ---------------- */
-$perPage = (int)$perPage;
-$offset  = (int)$offset;
-
+// MAIN QUERY (SIMPLIFIED - NO JOIN BUGS)
 $sql = "
 SELECT p.*,
-       COUNT(DISTINCT l.id) AS like_count,
-       COUNT(DISTINCT c.id) AS comment_count
+    (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS like_count,
+    (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count
 FROM posts p
-LEFT JOIN likes l ON l.post_id = p.id
-LEFT JOIN comments c ON c.post_id = p.id
 WHERE $where
-GROUP BY p.id
 ORDER BY $orderBy
 LIMIT $perPage OFFSET $offset
 ";
@@ -69,21 +68,16 @@ $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $posts = $stmt->fetchAll();
 
-/* ---------------- OTHER DATA ---------------- */
+// Other data
 $categories  = getAllCategories();
 $recentPosts = getRecentPosts(5);
 
-$queryStr = http_build_query(array_filter([
-    'cat' => $catFilter,
-    's'   => $search,
-    'sort' => $sort
-]));
-
+// Page title
 $pageTitle = $catFilter
     ? $catFilter . ' Posts'
     : ($search ? 'Search: ' . $search : 'All Posts');
 
-$pageDesc = 'Browse all blog posts on BlogSphere. Filter by category, search by keyword.';
+$pageDesc = 'Browse all blog posts.';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -91,12 +85,12 @@ $pageDesc = 'Browse all blog posts on BlogSphere. Filter by category, search by 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Profile</title>
+    <title>Posts</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/Style.css">
 
 
 </head>
@@ -201,7 +195,7 @@ $pageDesc = 'Browse all blog posts on BlogSphere. Filter by category, search by 
                                 <div class="post-card">
                                     <div class="post-card-img-wrapper">
                                         <?php if ($post['image']): ?>
-                                            <img src="<?= '/uploaded_img/' . $post['image'] ?>" alt="<?= sanitize($post['title']) ?>" class="post-card-img">
+                                            <img src="<?= 'uploaded_img/' . $post['image'] ?>" alt="<?= sanitize($post['title']) ?>" class="post-card-img">
                                         <?php else: ?>
                                             <div class="img-placeholder" style="height:220px;"><i class="fas fa-image"></i></div>
                                         <?php endif; ?>
