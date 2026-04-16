@@ -162,6 +162,13 @@ function getPostsByCategory($category, $limit = 3) {
     $stmt->execute();
     return $stmt->fetchAll();
 }
+
+function countPostsByCategory(string $category): int {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT COUNT(*) as cnt FROM posts WHERE category = ? AND status = 'active'");
+    $stmt->execute([$category]);
+    return (int)$stmt->fetch()['cnt'];
+}
 /* =====================================================
    SEARCH FUNCTIONS
 ===================================================== */
