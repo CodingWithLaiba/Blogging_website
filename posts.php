@@ -125,7 +125,7 @@ $pageDesc = 'Browse all blog posts.';
                         <?php if ($catFilter): ?> in <strong style="color:var(--accent);"><?= sanitize($catFilter) ?></strong><?php endif; ?>
                     </p>
                 </div>
-                <a href="categories.php" class="posts-hero-cats-link">
+                <a href="all_category.php" class="posts-hero-cats-link">
                     <i class="fas fa-layer-group me-1"></i>Browse Categories
                 </a>
             </div>
