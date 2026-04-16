@@ -292,3 +292,24 @@ function getFlash()
 
     return null;
 }
+
+// get all comments 
+function getAllCommentsAdmin() {
+    $db = getDB();
+
+    $stmt = $db->query("
+        SELECT 
+            comments.id,
+            comments.comment,
+            comments.date,
+            comments.post_id,
+            users.name AS user_name,
+            posts.title AS post_title
+        FROM comments
+        JOIN users ON users.id = comments.user_id
+        JOIN posts ON posts.id = comments.post_id
+        ORDER BY comments.date DESC
+    ");
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}

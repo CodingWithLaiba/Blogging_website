@@ -257,7 +257,7 @@ $pageDesc = 'Browse all blog posts.';
                             <span class="count"><?= $cat['post_count'] ?></span>
                         </a>
                     <?php endforeach; ?>
-                    <a href="categories.php" class="btn-primary-custom btn w-100 mt-3" style="font-size:0.82rem;padding:0.5rem;">
+                    <a href="all_category.php" class="btn-primary-custom btn w-100 mt-3" style="font-size:0.82rem;padding:0.5rem;">
                         <i class="fas fa-th-large me-1"></i>All Categories
                     </a>
                 </div>
@@ -267,7 +267,7 @@ $pageDesc = 'Browse all blog posts.';
                     <?php foreach ($recentPosts as $rp): ?>
                         <div class="recent-post-item">
                             <?php if ($rp['image']): ?>
-                                <img src="<?= '/uploaded_img/' . $rp['image'] ?>" alt="" class="recent-post-thumb">
+                                <img src="<?= 'uploaded_img/' . $rp['image'] ?>" alt="" class="recent-post-thumb">
                             <?php else: ?>
                                 <div class="recent-post-thumb img-placeholder" style="min-height:60px;font-size:1.2rem;border-radius:6px;"></div>
                             <?php endif; ?>

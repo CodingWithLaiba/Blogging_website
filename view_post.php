@@ -213,11 +213,11 @@ $pageDesc = excerpt($post['content'], 160);
                         <?php foreach ($relatedPosts as $relp): ?>
                             <?php if ($relp['id'] == $post['id']) continue; ?>
                             <div class="recent-post-item">
-                                <?php if ($post['image']): ?>
-                                    <img src="uploaded_img/<?= $relp['image'] ?>" alt="" class="recent-post-thumb">
-                                <?php else: ?>
-                                    <div class="recent-post-thumb img-placeholder" style="min-height:60px;font-size:1.1rem;border-radius:6px;flex-shrink:0;"></div>
-                                <?php endif; ?>
+                               <?php if ($relp['image']): ?>
+                                <img src="<?= 'uploaded_img/' . $relp['image'] ?>" alt="" class="recent-post-thumb">
+                            <?php else: ?>
+                                <div class="recent-post-thumb img-placeholder" style="min-height:60px;font-size:1.2rem;border-radius:6px;"></div>
+                            <?php endif; ?>
                                 <div>
                                     <a href="view_post.php?id=<?= $relp['id'] ?>" class="recent-post-title"><?= sanitize($relp['title']) ?></a>
                                     <div class="recent-post-date"><?= formatDate($relp['date']) ?></div>
@@ -231,7 +231,7 @@ $pageDesc = excerpt($post['content'], 160);
                     <h5 class="sidebar-widget-title"><i class="fas fa-clock me-2"></i>Recent Posts</h5>
                     <?php foreach ($recentPosts as $rp): ?>
                         <div class="recent-post-item">
-                            <?php if ($post['image']): ?>
+                            <?php if ($rp['image']): ?>
                                 <img src="<?= 'uploaded_img/' . $rp['image'] ?>" alt="" class="recent-post-thumb">
                             <?php else: ?>
                                 <div class="recent-post-thumb img-placeholder" style="min-height:60px;font-size:1.1rem;border-radius:6px;flex-shrink:0;"></div>
