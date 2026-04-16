@@ -109,7 +109,7 @@ $stats = getAdminStats();
                                 <div class="post-card">
                                     <div class="post-card-img-wrapper">
                                         <?php if (!empty($post['image'])): ?>
-                                            <img src="<?= postImageUrl($post['image']) ?>" alt="<?= sanitize($post['title']) ?>">
+                                            <img src="<?= 'uploaded_img/' . $post['image'] ?>" alt="<?= sanitize($post['title']) ?>">
                                         <?php else: ?>
                                             <div class="post-card-img-wrapper img-placeholder"><i class="fas fa-image"></i></div>
                                         <?php endif; ?>
