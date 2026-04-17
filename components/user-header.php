@@ -71,7 +71,7 @@ $pageDesc  = $pageDesc ?? 'BlogSphere - A modern blogging platform for content c
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <a class="dropdown-item text-danger" href="components/user_logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                                    <a class="dropdown-item text-danger" href="../components/user_logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
                                 </li>
                             </ul>
                         </div>
