@@ -62,7 +62,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
 
         <div class="menu-label">Website</div>
-        <a href="../index.php" target="_blank">
+        <a href="../users/index.php" target="_blank">
             <i class="fas fa-external-link-alt"></i> View Website
         </a>
 
@@ -110,7 +110,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
             <div class="d-flex align-items-center gap-2 gap-md-3">
 
-                <a href="../index.php" target="_blank" class="btn btn-sm view-site-btn">
+                <a href="../users/index.php" target="_blank" class="btn btn-sm view-site-btn">
                     <i class="fas fa-eye"></i> <span class="d-none d-md-inline">View Site</span>
                 </a>
 
